@@ -87,3 +87,4 @@ pub async fn get_content(info: web::Path<(String, String)>, tera: web::Data<Tera
         }
     }
 }
+

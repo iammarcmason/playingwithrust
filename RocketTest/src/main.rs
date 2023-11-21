@@ -53,7 +53,8 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         web::resource("/topics/{topic}")
                             .route(web::get().to(pages::get_topic_page)),
-                    ),
+                    )
+                    
             )
             .default_service(web::route().to(pages::handle_404))
     })

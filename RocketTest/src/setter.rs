@@ -3,6 +3,10 @@ use rusqlite::Connection;
 use tera::Tera;
 use crate::models::Content;
 
+
+
+
+
 pub async fn add_content(content: web::Form<Content>, _tera: web::Data<Tera>) -> Result<HttpResponse> {
     let conn = match Connection::open("rocket.db") {
         Ok(c) => c,
@@ -13,7 +17,6 @@ pub async fn add_content(content: web::Form<Content>, _tera: web::Data<Tera>) ->
     };
 
     let topic_exists = !content.topic.is_empty(); // Check if topic is provided
-
     // Print the received content for debugging
     println!("Received content: {:?}", content);
 
@@ -74,6 +77,11 @@ pub async fn add_content(content: web::Form<Content>, _tera: web::Data<Tera>) ->
         let success_message = "Data added successfully!";
         println!("{}", success_message);
         Ok(HttpResponse::Ok().body(success_message))
+
+
+
+
+        
     } else {
         let message = "Topic is required".to_string();
         Ok(HttpResponse::Ok().body(message))

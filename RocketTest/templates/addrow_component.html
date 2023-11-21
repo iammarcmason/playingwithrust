@@ -1,0 +1,37 @@
+<h1>Add Information</h1>
+
+<!-- Error messages section -->
+<div id="errorDiv" class="hidden" style="color: red;"></div>
+
+<form  hx-post="/add" hx-target="#errorDiv" hx-swap="outerHTML" id="addForm">
+    <label for="existing-topic">Existing Topic:</label><br>
+    <select id="existing-topic" name="existing-topic" onchange="populateTopic()">
+        <option value="">Select an existing topic</option>
+        {% for topic in topics %}
+            <option value="{{ topic }}">{{ topic }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <label for="new-topic">New Topic:</label><br>
+    <input type="text" id="new-topic" name="topic"><br><br>
+
+    <label for="subtopic">Sub-topic:</label><br>
+    <input type="text" id="subtopic" name="subtopic"><br><br>
+
+    <label for="content">Content:</label><br>
+    <textarea id="content" name="content" rows="4" cols="50"></textarea><br><br>
+
+    <input type="submit" value="Submit">
+</form>
+
+<script>
+    function populateTopic() {
+        var existingTopic = document.getElementById('existing-topic').value;
+        if (existingTopic !== '') {
+            document.getElementById('new-topic').value = existingTopic;
+        }
+        function clearFormFields() {
+            document.getElementById('addForm').reset(); // Reset the form
+        }
+    }
+</script>
