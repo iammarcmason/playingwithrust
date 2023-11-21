@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Topics and Subtopics</title>
+</head>
+<body>
+    <h1>Topics and Subtopics</h1>
+
+    <h2>Topics:</h2>
+    <ul>
+        {% for topic in topics %}
+            <li><a href="/topics/{{ topic }}">{{ topic }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <h2>All Subtopics:</h2>
+    <ul>
+        {% for topic in topics %}
+            <li>{{ topic }}
+                <ul>
+                    {% set subtopic_list = subtopics[topic] %}
+                    {% if subtopic_list %}
+                        {% for subtopic in subtopic_list %}
+                            <li><a href="/topics/{{ topic }}/{{ subtopic }}">{{ subtopic }}</a></li>
+                        {% endfor %}
+                    {% else %}
+                        <li>No subtopics found</li>
+                    {% endif %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ topic }} Page</title>
+</head>
+<body>
+    <h1>{{ topic }}</h1>
+
+    <!-- Display subtopics here -->
+    <h2>Subtopics:</h2>
+    <ul>
+        {% for subtopic in subtopics %}
+            <li><a href="/topics/{{ topic }}/{{ subtopic }}">{{ subtopic }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,29 @@
+[package]
+name = "rockettesting"
+version = "0.1.0"
+edition = "2021"
+
+# Build script configuration
+[package.metadata.build-script]
+name = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "4.0.0"
+#rusqlite = "0.26.0"
+tera = "1.12.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+pulldown-cmark = "0.9.0"
+
+
+[dependencies.rusqlite]
+version = "0.30.0"
+features = ["bundled"]
+
+
+[build]
+# Include additional directories/files in the build
+# Adjust this according to your project structure
+include = ["templates"]
