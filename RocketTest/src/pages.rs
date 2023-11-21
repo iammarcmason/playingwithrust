@@ -28,7 +28,7 @@ pub async fn index(tera: web::Data<Tera>) -> Result<HttpResponse> {
             return Ok(HttpResponse::InternalServerError().finish());
         }
     };
-
+//Gets all Topics & SubTopics
     let mut stmt = match conn.prepare(
         "
         SELECT topic_name, sub_topic_name
@@ -84,8 +84,7 @@ pub async fn index(tera: web::Data<Tera>) -> Result<HttpResponse> {
 }
 
 
-pub 
-async fn get_topic_page(tera: web::Data<Tera>, info: web::Path<String>) -> impl Responder {
+pub async fn get_topic_page(tera: web::Data<Tera>, info: web::Path<String>) -> impl Responder {
     let topic = info.into_inner(); // Extract the topic name from the URL
 
     // Open a connection to your SQLite database
