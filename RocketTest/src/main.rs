@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("")
                     .route("/", web::get().to(pages::index)) // Handle root path
-                    .route("/addrow", web::get().to(pages::addrow))
+                    //.route("/addrow", web::get().to(pages::addrow))
                     .route(
                         "/topics/{topic}/{subtopic}",
                         web::get().to(getter::get_content),

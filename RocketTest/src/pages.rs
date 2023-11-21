@@ -1,6 +1,7 @@
-use actix_web::{http, web, HttpResponse, Responder, Result};
+//use actix_web::{http, web, HttpResponse, Responder, Result};
+use actix_web::{web, HttpResponse, Responder, Result};
 use rusqlite::{params, Connection};
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 use tera::{Context, Tera};
 
 
@@ -20,6 +21,7 @@ pub async fn handle_404(tera: web::Data<Tera>) -> Result<HttpResponse> {
 }
 
 
+
 pub async fn index(tera: web::Data<Tera>) -> Result<HttpResponse> {
     let conn = match Connection::open("rocket.db") {
         Ok(c) => c,
@@ -28,7 +30,8 @@ pub async fn index(tera: web::Data<Tera>) -> Result<HttpResponse> {
             return Ok(HttpResponse::InternalServerError().finish());
         }
     };
-//Gets all Topics & SubTopics
+
+    // Gets all Topics & SubTopics
     let mut stmt = match conn.prepare(
         "
         SELECT topic_name, sub_topic_name
@@ -68,11 +71,20 @@ pub async fn index(tera: web::Data<Tera>) -> Result<HttpResponse> {
             .push(subtopic);
     }
 
-    let topics: Vec<String> = topic_subtopics.keys().cloned().collect();
+    // Sort topics and subtopics alphabetically
+    let mut sorted_topic_subtopics: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for (topic, subtopics) in &topic_subtopics {
+        let mut sorted_subtopics = subtopics.clone();
+        sorted_subtopics.sort(); // Sort subtopics alphabetically
+        sorted_topic_subtopics.insert(topic.clone(), sorted_subtopics);
+    }
+
+    let mut sorted_topics = sorted_topic_subtopics.keys().cloned().collect::<Vec<_>>();
+    sorted_topics.sort(); // Sort topics alphabetically
 
     let mut context = Context::new();
-    context.insert("topics", &topics);
-    context.insert("subtopics", &topic_subtopics);
+    context.insert("topics", &sorted_topics);
+    context.insert("subtopics", &sorted_topic_subtopics);
 
     match tera.render("index.html", &context) {
         Ok(rendered) => Ok(HttpResponse::Ok().content_type("text/html").body(rendered)),
@@ -140,46 +152,46 @@ pub async fn get_topic_page(tera: web::Data<Tera>, info: web::Path<String>) -> i
 
 
 
-pub async fn addrow(tera: web::Data<Tera>) -> Result<HttpResponse> {
-    let conn = match Connection::open("rocket.db") {
-        Ok(c) => c,
-        Err(e) => {
-            eprintln!("Failed to open database connection: {}", e);
-            return Ok(HttpResponse::InternalServerError().finish());
-        }
-    };
+// pub async fn addrow(tera: web::Data<Tera>) -> Result<HttpResponse> {
+//     let conn = match Connection::open("rocket.db") {
+//         Ok(c) => c,
+//         Err(e) => {
+//             eprintln!("Failed to open database connection: {}", e);
+//             return Ok(HttpResponse::InternalServerError().finish());
+//         }
+//     };
 
-    // Fetch existing topics from the 'topic' table
-    let topics = match conn.prepare("SELECT topic_name FROM topic") {
-        Ok(mut stmt) => {
-            let topic_iter = stmt.query_map([], |row| row.get(0));
-            match topic_iter {
-                Ok(topics) => topics.map(|t| t.unwrap()).collect::<Vec<String>>(),
-                Err(e) => {
-                    eprintln!("Failed to fetch topics: {}", e);
-                    return Ok(HttpResponse::InternalServerError().finish());
-                }
-            }
-        }
-        Err(e) => {
-            eprintln!("Failed to prepare SQL statement: {}", e);
-            return Ok(HttpResponse::InternalServerError().finish());
-        }
-    };
+//     // Fetch existing topics from the 'topic' table
+//     let topics = match conn.prepare("SELECT topic_name FROM topic") {
+//         Ok(mut stmt) => {
+//             let topic_iter = stmt.query_map([], |row| row.get(0));
+//             match topic_iter {
+//                 Ok(topics) => topics.map(|t| t.unwrap()).collect::<Vec<String>>(),
+//                 Err(e) => {
+//                     eprintln!("Failed to fetch topics: {}", e);
+//                     return Ok(HttpResponse::InternalServerError().finish());
+//                 }
+//             }
+//         }
+//         Err(e) => {
+//             eprintln!("Failed to prepare SQL statement: {}", e);
+//             return Ok(HttpResponse::InternalServerError().finish());
+//         }
+//     };
 
-    let success_message = "Data added successfully!";
-    let mut context = Context::new();
-    context.insert("message", success_message);
-    context.insert("topics", &topics);
+//     let success_message = "Data added successfully!";
+//     let mut context = Context::new();
+//     context.insert("message", success_message);
+//     context.insert("topics", &topics);
 
-    match tera.render("addrow.html", &context) {
-        Ok(rendered) => Ok(HttpResponse::Ok()
-            .content_type("text/html")
-            .append_header((http::header::CACHE_CONTROL, "no-cache"))
-            .body(rendered)),
-        Err(e) => {
-            eprintln!("Template rendering error: {}", e);
-            Ok(HttpResponse::InternalServerError().finish())
-        }
-    }
-}
+//     match tera.render("addrow.html", &context) {
+//         Ok(rendered) => Ok(HttpResponse::Ok()
+//             .content_type("text/html")
+//             .append_header((http::header::CACHE_CONTROL, "no-cache"))
+//             .body(rendered)),
+//         Err(e) => {
+//             eprintln!("Template rendering error: {}", e);
+//             Ok(HttpResponse::InternalServerError().finish())
+//         }
+//     }
+// }
