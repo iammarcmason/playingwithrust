@@ -1,9 +1,9 @@
 //use actix_web::{http, web, HttpResponse, Responder, Result};
 use actix_web::{web, HttpResponse, Responder, Result};
 use rusqlite::{params, Connection};
-use std::collections::{HashMap, BTreeMap};
 use tera::{Context, Tera};
 
+use crate::getter;
 
 pub async fn handle_404(tera: web::Data<Tera>) -> Result<HttpResponse> {
     let mut context = Context::new();
@@ -20,8 +20,6 @@ pub async fn handle_404(tera: web::Data<Tera>) -> Result<HttpResponse> {
     }
 }
 
-
-
 pub async fn index(tera: web::Data<Tera>) -> Result<HttpResponse> {
     let conn = match Connection::open("rocket.db") {
         Ok(c) => c,
@@ -31,56 +29,13 @@ pub async fn index(tera: web::Data<Tera>) -> Result<HttpResponse> {
         }
     };
 
-    // Gets all Topics & SubTopics
-    let mut stmt = match conn.prepare(
-        "
-        SELECT topic_name, sub_topic_name
-        FROM topic
-        LEFT JOIN sub_topic ON topic.topic_id = sub_topic.topic_id
-    ",
-    ) {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("Failed to prepare SQL statement: {}", e);
-            return Ok(HttpResponse::InternalServerError().finish());
-        }
-    };
-
-    let rows = match stmt.query_map([], |row| {
-        Ok((row.get::<usize, String>(0)?, row.get::<usize, String>(1)?))
-    }) {
-        Ok(rows) => rows,
+    let (sorted_topics, sorted_topic_subtopics) = match getter::get_topics_and_subtopics(&conn) {
+        Ok(data) => data,
         Err(e) => {
             eprintln!("Failed to fetch topics and subtopics: {}", e);
             return Ok(HttpResponse::InternalServerError().finish());
         }
     };
-
-    let mut topic_subtopics: HashMap<String, Vec<String>> = HashMap::new();
-    for row in rows {
-        let (topic, subtopic) = match row {
-            Ok((topic, subtopic)) => (topic, subtopic),
-            Err(e) => {
-                eprintln!("Error reading row: {}", e);
-                continue;
-            }
-        };
-        topic_subtopics
-            .entry(topic)
-            .or_insert_with(Vec::new)
-            .push(subtopic);
-    }
-
-    // Sort topics and subtopics alphabetically
-    let mut sorted_topic_subtopics: BTreeMap<String, Vec<String>> = BTreeMap::new();
-    for (topic, subtopics) in &topic_subtopics {
-        let mut sorted_subtopics = subtopics.clone();
-        sorted_subtopics.sort(); // Sort subtopics alphabetically
-        sorted_topic_subtopics.insert(topic.clone(), sorted_subtopics);
-    }
-
-    let mut sorted_topics = sorted_topic_subtopics.keys().cloned().collect::<Vec<_>>();
-    sorted_topics.sort(); // Sort topics alphabetically
 
     let mut context = Context::new();
     context.insert("topics", &sorted_topics);
@@ -94,7 +49,6 @@ pub async fn index(tera: web::Data<Tera>) -> Result<HttpResponse> {
         }
     }
 }
-
 
 pub async fn get_topic_page(tera: web::Data<Tera>, info: web::Path<String>) -> impl Responder {
     let topic = info.into_inner(); // Extract the topic name from the URL
@@ -148,9 +102,6 @@ pub async fn get_topic_page(tera: web::Data<Tera>, info: web::Path<String>) -> i
         }
     }
 }
-
-
-
 
 // pub async fn addrow(tera: web::Data<Tera>) -> Result<HttpResponse> {
 //     let conn = match Connection::open("rocket.db") {

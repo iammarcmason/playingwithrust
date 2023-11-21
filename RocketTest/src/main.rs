@@ -1,5 +1,5 @@
-use actix_web::{web, App, HttpServer};
 use actix_files as fs;
+use actix_web::{web, App, HttpServer};
 use rusqlite::Connection;
 use tera::Tera;
 
@@ -55,9 +55,7 @@ async fn main() -> std::io::Result<()> {
                         web::resource("/topics/{topic}")
                             .route(web::get().to(pages::get_topic_page)),
                     )
-                    .service(fs::Files::new("/static", "static").show_files_listing())
-            
-                    
+                    .service(fs::Files::new("/static", "static").show_files_listing()),
             )
             .default_service(web::route().to(pages::handle_404))
     })

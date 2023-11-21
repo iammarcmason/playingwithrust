@@ -3,12 +3,13 @@
 <!-- Error messages section -->
 <div id="messageDiv" class="hidden" style="color: red;"></div>
 
-<form  hx-post="/add" hx-target="#messageDiv" hx-swap="innerHTML" id="addForm" hx-on::after-request=" if(event.detail.successful) this.reset()">
+<form hx-post="/add" hx-target="#messageDiv" hx-swap="innerHTML" id="addForm"
+    hx-on::after-request=" if(event.detail.successful) this.reset()">
     <label for="existing-topic">Existing Topic:</label><br>
     <select id="existing-topic" name="existing-topic" onchange="populateTopic()">
         <option value="">Select an existing topic</option>
         {% for topic in topics %}
-            <option value="{{ topic }}">{{ topic }}</option>
+        <option value="{{ topic }}">{{ topic }}</option>
         {% endfor %}
     </select><br><br>
 
